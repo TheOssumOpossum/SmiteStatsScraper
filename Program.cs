@@ -15,9 +15,17 @@ namespace SmiteStats
         {
             int match1Id = 300850468;
             int match2Id = 300656142;
+            int match3Id = 300850467;
+
+            int onePlayer = 300850465;
+            int nameless = 300850464;
 
             MatchDetails match1 = new MatchDetails(match1Id);
             MatchDetails match2 = new MatchDetails(match2Id);
+            MatchDetails match3 = new MatchDetails(match3Id);
+
+            MatchDetails matchOnePlayer = new MatchDetails(onePlayer);
+            MatchDetails namelessGame = new MatchDetails(nameless);
 
             System.IO.File.WriteAllLines(@"..\..\html.txt", match1.trimmedHtml);
         }
@@ -71,21 +79,18 @@ namespace SmiteStats
             ReadHtml(trimmedHtml);
         }
 
-
         private void ReadHtml(List<string> trimmedHtml)
         {
-
             bool editingWinner = true;
             bool skippingLines = false;
             string characterMarker = "<tr>"; //occurs twolines before the character's god (in the alt text)
-            //string pictureMarker = "alt="; //identifier for gods and items
-            //string numberMarker = "<td><p>"; //occurs before every statline
+
             string victoryBuildStatsMarker = "<table id=\"victory-builds-stats\"";
             string defeatDetailsMarker = "<h4>Defeat</h4>";
             string defeatBuildStatsMarker = "<table id=\"defeat-builds-stats\"";
 
             for (int lineNumber = 0; lineNumber < trimmedHtml.Count; lineNumber++){
-                //ignoring build description stuff, for now atleast
+                //ignoring item description stuff, probably easier to do from a database given my intent is only to analyze per patch
                 if (trimmedHtml[lineNumber].Contains(victoryBuildStatsMarker)) {skippingLines = true;}
                 else if (trimmedHtml[lineNumber].Contains(defeatDetailsMarker)) { skippingLines = false;}
                 else if (trimmedHtml[lineNumber].Contains(defeatBuildStatsMarker)) { skippingLines = true;}
@@ -209,17 +214,13 @@ namespace SmiteStats
             member.damageTaken = GetNumbersFromLine(html[lineNumber + takenOffset]);
 
             lineNumber = lineNumber + 17;
-            //string
-            //while (!line.Contains("</tr>"))
-            //{
 
-            //    lineNumber++;
-            //    line = html[lineNumber];
-            //}
+            string characterEndMarker = "</tr>";
+            string itemMarker = "alt=";
             int itemNumber = 0;
-            for (string line = html[lineNumber]; !line.Contains("</tr>");line = html[lineNumber++])
+            for (string line = html[lineNumber]; !line.Contains(characterEndMarker);line = html[lineNumber++])
             {
-                if (line.Contains("alt="))
+                if (line.Contains(itemMarker))
                 {
                     if (itemNumber < 2)
                     {
@@ -268,8 +269,6 @@ namespace SmiteStats
             {
                 this.member = new List<Player>();
             }
-
-
         }
 
         class Player
@@ -285,8 +284,6 @@ namespace SmiteStats
                 relic = new Item[2];
                 build = new Item[6];
             }
-
-
         }
 
         class Item
